@@ -1,4 +1,3 @@
-%%writefile app.py
 import streamlit as st
 import cv2
 import numpy as np
@@ -61,4 +60,6 @@ if uploaded_file is not None:
         ax.axis("off")
         st.pyplot(fig)
     else:
+
         st.warning("Could not detect land area clearly. Try another image.")
+        "remove Jupyter magic line"
