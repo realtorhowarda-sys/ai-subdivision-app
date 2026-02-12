@@ -1,3 +1,3 @@
 import streamlit as st
-st.title("✅ Streamlit is working!")
-st.write("If you see this text, your app file is loading correctly.")
+st.title("✅ Streamlit Cloud Test")
+st.write("If you can see this, the server now starts correctly!")
