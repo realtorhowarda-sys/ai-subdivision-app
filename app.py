@@ -1,8 +1,3 @@
-# ---------- AI Subdivision Mapper ----------
-# This Streamlit app loads an uploaded property image, performs
-# AI-based land segmentation using Meta's Segment Anything (SAM),
-# and generates a simple conceptual subdivision layout.
-
 import streamlit as st
 import cv2
 import numpy as np
@@ -95,3 +90,4 @@ if uploaded_file is not None:
         st.warning("AI segmentation found very little usable land; try another image.")
 else:
     st.info("👉 Upload a clear aerial or satellite image to start.")
+
