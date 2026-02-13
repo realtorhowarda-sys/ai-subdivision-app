@@ -1,4 +1,3 @@
-# ---------- app.py ----------
 import streamlit as st
 import cv2
 import numpy as np
@@ -93,5 +92,6 @@ for m in result:
 else:
     st.info("Upload an aerial or satellite image to start.")
 # ---------- end app.py ----------
+
 
 
