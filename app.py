@@ -1,3 +1,8 @@
+# ---------- AI Subdivision Mapper ----------
+# This Streamlit app loads an uploaded property image, performs
+# AI-based land segmentation using Meta's Segment Anything (SAM),
+# and generates a simple conceptual subdivision layout.
+
 import streamlit as st
 import cv2
 import numpy as np
@@ -6,33 +11,23 @@ from shapely.geometry import Polygon
 import torch
 from segment_anything import sam_model_registry, SamAutomaticMaskGenerator
 
-# --- Page setup ---
+# ---------- Page Setup ----------
 st.set_page_config(page_title="AI Subdivision Mapper", layout="wide")
-st.title("🏗️ AI Subdivision Mapper (Base Version)")
-st.write("Upload an image of a property and preview a preliminary subdivision layout.")
+st.title("🏗️ AI Subdivision Mapper")
+st.write("Upload an image of a property and view detected land areas "
+         "and a conceptual subdivision layout. (Beta version)")
 
-# --- Sidebar controls ---
+# ---------- Sidebar Controls ----------
 st.sidebar.title("Controls")
 num_lots = st.sidebar.slider("Number of lots", 2, 40, 8)
 
-# --- File uploader ---
-uploaded_file = st.file_uploader("Upload a property image (JPEG or PNG)", type=["jpg", "png"])
+# ---------- File Upload ----------
+uploaded_file = st.file_uploader("Upload property image (JPEG or PNG)", type=["jpg", "png"])
 
-# --- Processing logic ---
-if uploaded_file is not None:
-    # Decode image
-    file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
-    image = cv2.imdecode(file_bytes, 1)
-    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-
-    st.image(image, caption="Original Property Image", use_container_width=True)
-
-    # ----- Real AI segmentation using Meta's Segment Anything -----
-from segment_anything import sam_model_registry, SamAutomaticMaskGenerator
-import torch
-
+# ---------- Load Model Function ----------
 @st.cache_resource(show_spinner=False)
 def load_sam_model():
+    """Load the Segment Anything model once and reuse across runs."""
     sam_checkpoint = "models/sam_vit_b_01ec64.pth"
     model_type = "vit_b"
     device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -41,23 +36,30 @@ def load_sam_model():
     mask_generator = SamAutomaticMaskGenerator(sam)
     return mask_generator, device
 
-mask_generator, device = load_sam_model()
 
-with st.spinner("🤖 Running AI segmentation... this can take up to 30 s"):
-    result = mask_generator.generate(image)
+# ---------- Main Logic ----------
+if uploaded_file is not None:
+    # 1. Decode the uploaded file to an image array
+    file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
+    image = cv2.imdecode(file_bytes, 1)
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
-mask = np.zeros(image.shape[:2], dtype=np.uint8)
-for m in result:
-    mask[m["segmentation"]] = 255
+    st.image(image, caption="Uploaded Property Image", use_container_width=True)
 
-    st.subheader("AI‑Detected Land Segments")
+    # 2. Run SAM Segmentation
+    mask_generator, device = load_sam_model()
+    with st.spinner("🤖 Running AI segmentation... (may take up to 30 s)"):
+        result = mask_generator.generate(image)
+
+    # Combine all masks into one black/white mask
+    mask = np.zeros(image.shape[:2], dtype=np.uint8)
+    for m in result:
+        mask[m["segmentation"]] = 255
+
+    st.subheader("AI-Detected Land Segments")
     st.image(mask, use_container_width=True)
- 
-    # Display segmentation preview
-    st.subheader("Detected Land (placeholder segmentation)")
-    st.image(mask, use_container_width=True, caption="Land mask (to be replaced with real AI segmentation)")
 
-    # -----  Subdivision logic -----
+    # 3. Generate a very simple conceptual subdivision grid
     coords = np.column_stack(np.where(mask > 0))
     if len(coords) > 10:
         polygon = Polygon(coords)
@@ -87,14 +89,9 @@ for m in result:
             x, y = lot.exterior.xy
             ax.plot(y, x, 'r', linewidth=1)
         ax.axis("off")
-        st.subheader("Generated Subdivision Layout")
+        st.subheader("Generated Conceptual Subdivision Layout")
         st.pyplot(fig)
     else:
-        st.warning("Could not detect usable land area.")
+        st.warning("AI segmentation found very little usable land; try another image.")
 else:
-    st.info("Upload an aerial or satellite image to start.")
-# ---------- end app.py ----------
-
-
-
-
+    st.info("👉 Upload a clear aerial or satellite image to start.")
