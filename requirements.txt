@@ -1,5 +1,10 @@
 streamlit
-matplotlib
+torch
+torchvision
+torchaudio
+segment-anything
 opencv-python-headless
+matplotlib
 shapely
 geopandas
+numpy
