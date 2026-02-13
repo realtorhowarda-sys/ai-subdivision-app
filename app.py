@@ -49,10 +49,9 @@ mask = np.zeros(image.shape[:2], dtype=np.uint8)
 for m in result:
     mask[m["segmentation"]] = 255
 
-st.subheader("AI‑Detected Land Segments")
-st.image(mask, use_container_width=True)
+    st.subheader("AI‑Detected Land Segments")
+    st.image(mask, use_container_width=True)
  
-
     # Display segmentation preview
     st.subheader("Detected Land (placeholder segmentation)")
     st.image(mask, use_container_width=True, caption="Land mask (to be replaced with real AI segmentation)")
@@ -94,4 +93,5 @@ st.image(mask, use_container_width=True)
 else:
     st.info("Upload an aerial or satellite image to start.")
 # ---------- end app.py ----------
+
 
