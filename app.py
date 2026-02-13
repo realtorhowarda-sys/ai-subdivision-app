@@ -26,10 +26,32 @@ if uploaded_file is not None:
 
     st.image(image, caption="Original Property Image", use_container_width=True)
 
-    # -----  Basic segmentation placeholder -----
-    gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
-    # Simple threshold to separate rough land
-    _, mask = cv2.threshold(gray, 160, 255, cv2.THRESH_BINARY_INV)
+    # ----- Real AI segmentation using Meta's Segment Anything -----
+from segment_anything import sam_model_registry, SamAutomaticMaskGenerator
+import torch
+
+@st.cache_resource(show_spinner=False)
+def load_sam_model():
+    sam_checkpoint = "models/sam_vit_b_01ec64.pth"
+    model_type = "vit_b"
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    sam = sam_model_registry[model_type](checkpoint=sam_checkpoint)
+    sam.to(device=device)
+    mask_generator = SamAutomaticMaskGenerator(sam)
+    return mask_generator, device
+
+mask_generator, device = load_sam_model()
+
+with st.spinner("🤖 Running AI segmentation... this can take up to 30 s"):
+    result = mask_generator.generate(image)
+
+mask = np.zeros(image.shape[:2], dtype=np.uint8)
+for m in result:
+    mask[m["segmentation"]] = 255
+
+st.subheader("AI‑Detected Land Segments")
+st.image(mask, use_container_width=True)
+ 
 
     # Display segmentation preview
     st.subheader("Detected Land (placeholder segmentation)")
@@ -72,3 +94,4 @@ if uploaded_file is not None:
 else:
     st.info("Upload an aerial or satellite image to start.")
 # ---------- end app.py ----------
+
