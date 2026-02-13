@@ -3,6 +3,8 @@ import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 from shapely.geometry import Polygon
+import torch
+from segment_anything import sam_model_registry, SamAutomaticMaskGenerator
 
 # --- Page setup ---
 st.set_page_config(page_title="AI Subdivision Mapper", layout="wide")
@@ -92,6 +94,7 @@ for m in result:
 else:
     st.info("Upload an aerial or satellite image to start.")
 # ---------- end app.py ----------
+
 
 
 
