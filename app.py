@@ -31,7 +31,13 @@ def load_sam_model():
     mask_generator = SamAutomaticMaskGenerator(sam)
     return mask_generator, device
 
-
+@st.cache_resource(show_spinner=False)
+def load_sam():
+    sam = sam_model_registry["vit_b"](
+        checkpoint="models/sam_vit_b_01ec64.pth"
+    )
+    sam.to("cpu")  # CPU-only for stability
+    return SamAutomaticMaskGenerator(sam)
 # ---------- Main Logic ----------
 if uploaded_file is not None:
     # 1. Decode the uploaded file to an image array
@@ -40,18 +46,27 @@ if uploaded_file is not None:
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
     st.image(image, caption="Uploaded Property Image", use_container_width=True)
+         # 2. Segmentation choice (safe)
+use_sam = st.checkbox("Enable AI segmentation (SAM)", value=False)
 
-    # 2. Run SAM Segmentation
-    mask_generator, device = load_sam_model()
-    with st.spinner("🤖 Running AI segmentation... (may take up to 30 s)"):
-        result = mask_generator.generate(image)
+if use_sam:
+    with st.spinner("🤖 Running AI segmentation (this may take up to 30s)..."):
+        mask_generator = load_sam()
+        sam_masks = mask_generator.generate(image)
 
-    # Combine all masks into one black/white mask
     mask = np.zeros(image.shape[:2], dtype=np.uint8)
-    for m in result:
+    for m in sam_masks:
         mask[m["segmentation"]] = 255
 
-    st.subheader("AI-Detected Land Segments")
+    st.subheader("AI Segmentation (SAM)")
+    st.image(mask, use_container_width=True)
+
+else:
+    # Fast fallback (no AI)
+    gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
+    _, mask = cv2.threshold(gray, 160, 255, cv2.THRESH_BINARY_INV)
+
+    st.subheader("Simple Mask (No AI)")
     st.image(mask, use_container_width=True)
 
     # 3. Generate a very simple conceptual subdivision grid
@@ -90,4 +105,5 @@ if uploaded_file is not None:
         st.warning("AI segmentation found very little usable land; try another image.")
 else:
     st.info("👉 Upload a clear aerial or satellite image to start.")
+
 
