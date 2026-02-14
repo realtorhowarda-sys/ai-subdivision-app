@@ -40,6 +40,15 @@ def load_sam():
     return SamAutomaticMaskGenerator(sam)
 # ---------- Main Logic ----------
 if uploaded_file is not None:
+           # ✅ STEP 3: SAM toggle (always visible after upload)
+    use_sam = st.checkbox("Enable AI segmentation (SAM)", value=False)
+
+    # Decode image
+    file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
+    image = cv2.imdecode(file_bytes, 1)
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+
+    st.image(image, caption="Uploaded Image", use_container_width=True)
     # 1. Decode the uploaded file to an image array
     file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
     image = cv2.imdecode(file_bytes, 1)
@@ -105,5 +114,6 @@ else:
         st.warning("AI segmentation found very little usable land; try another image.")
 else:
     st.info("👉 Upload a clear aerial or satellite image to start.")
+
 
 
