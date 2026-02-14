@@ -6,6 +6,23 @@ from shapely.geometry import Polygon
 import torch
 from segment_anything import sam_model_registry, SamAutomaticMaskGenerator
 
+def clean_mask(mask):
+    """
+    Clean a binary land mask:
+    - Remove small noise
+    - Fill holes
+    """
+    # Ensure mask is binary
+    mask = (mask > 0).astype(np.uint8) * 255
+
+    # Remove small noise (opening)
+    kernel = np.ones((5, 5), np.uint8)
+    opened = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
+
+    # Fill holes (closing)
+    cleaned = cv2.morphologyEx(opened, cv2.MORPH_CLOSE, kernel)
+
+    return cleaned
 # ---------- Page Setup ----------
 st.set_page_config(page_title="AI Subdivision Mapper", layout="wide")
 st.title("🏗️ AI Subdivision Mapper")
@@ -99,6 +116,7 @@ if use_sam:
     mask = np.zeros(image.shape[:2], dtype=np.uint8)
     for m in sam_masks:
         mask[m["segmentation"]] = 255
+             mask = clean_mask(mask)
 
     st.subheader("AI Segmentation (SAM)")
     st.image(mask, use_container_width=True)
@@ -107,6 +125,7 @@ else:
     # Fast fallback (no AI)
     gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
     _, mask = cv2.threshold(gray, 160, 255, cv2.THRESH_BINARY_INV)
+         mask = clean_mask(mask)
 
     st.subheader("Simple Mask (No AI)")
     st.image(mask, use_container_width=True)
@@ -147,6 +166,7 @@ else:
         st.warning("AI segmentation found very little usable land; try another image.")
 else:
     st.info("👉 Upload a clear aerial or satellite image to start.")
+
 
 
 
