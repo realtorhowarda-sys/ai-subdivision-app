@@ -9,6 +9,25 @@ from segment_anything import sam_model_registry, SamAutomaticMaskGenerator
 def clean_mask(mask):
     from shapely.geometry import Polygon
 
+polygons = mask_to_polygons(mask)
+
+if not polygons:
+    st.warning("No buildable land regions detected.")
+else:
+    # Select the largest land polygon
+    land_poly = max(polygons, key=lambda p: p.area)
+
+    # Visualize the buildable land polygon
+    fig, ax = plt.subplots(figsize=(6, 6))
+    ax.imshow(mask, cmap="gray")
+
+    x, y = land_poly.exterior.xy
+    ax.plot(x, y, color="yellow", linewidth=2)
+
+    ax.set_title("Detected Buildable Land Area")
+    ax.axis("off")
+    st.pyplot(fig)
+
 def mask_to_polygons(mask, min_area=5000):
     """
     Convert a binary mask to Shapely polygons.
@@ -185,6 +204,7 @@ else:
         st.warning("AI segmentation found very little usable land; try another image.")
 else:
     st.info("👉 Upload a clear aerial or satellite image to start.")
+
 
 
 
