@@ -7,6 +7,25 @@ import torch
 from segment_anything import sam_model_registry, SamAutomaticMaskGenerator
 
 def clean_mask(mask):
+    from shapely.geometry import Polygon
+
+def mask_to_polygons(mask, min_area=5000):
+    """
+    Convert a binary mask to Shapely polygons.
+    Keeps only polygons larger than min_area.
+    """
+    contours, _ = cv2.findContours(
+        mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
+    )
+
+    polygons = []
+    for cnt in contours:
+        if len(cnt) >= 3:
+            poly = Polygon(cnt.squeeze())
+            if poly.area >= min_area:
+                polygons.append(poly)
+
+    return polygons
     """
     Clean a binary land mask:
     - Remove small noise
@@ -166,6 +185,7 @@ else:
         st.warning("AI segmentation found very little usable land; try another image.")
 else:
     st.info("👉 Upload a clear aerial or satellite image to start.")
+
 
 
 
