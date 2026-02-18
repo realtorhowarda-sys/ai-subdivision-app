@@ -1,6 +1,7 @@
 import streamlit as st
 import matplotlib.pyplot as plt
 from shapely.geometry import box
+import math
 
 st.set_page_config(page_title="Land Subdivision Planner", layout="wide")
 st.title("🏗️ Land Subdivision Planner")
@@ -81,4 +82,5 @@ if not land_poly.is_valid:
     st.warning("⚠️ The polygon is self‑intersecting or invalid.")
 else:
     st.success("✅ Polygon is valid and ready for subdivision.")
+
 
