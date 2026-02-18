@@ -1,78 +1,86 @@
-import streamlit as st
-st.write("✅ NEW OUTLINE APP LOADED")
-
-# ---------- Simple Land Outline Subdivision App ----------
+# ---------- Land Subdivision Planner (Irregular Outline) ----------
 import streamlit as st
 import matplotlib.pyplot as plt
 import numpy as np
-from shapely.geometry import Polygon, box
+from shapely.geometry import Polygon
+import math
 
 # ---------- Page Setup ----------
 st.set_page_config(page_title="Land Subdivision Planner", layout="wide")
 st.title("🏗️ Land Subdivision Planner")
 st.write(
-    "Define the outline of a parcel by entering side lengths. "
-    "The app draws the shape and performs a simple equal‑sized subdivision."
+    "Define a parcel by entering side lengths and angles. "
+    "The outline is drawn from sequential directions."
 )
 
-# ---------- Land Dimensions Input ----------
-st.sidebar.header("Land Outline Input")
+# ---------- Sidebar Inputs ----------
+st.sidebar.header("Land Outline (Length + Angle)")
 
-# For simplicity, start with a rectangular outline.
-length = st.sidebar.number_input("Length of Land (meters)", min_value=1.0, value=100.0)
-width = st.sidebar.number_input("Width of Land (meters)", min_value=1.0, value=60.0)
+num_sides = st.sidebar.slider("Number of sides", 3, 10, 4)
 
-# Number of desired subdivisions
-rows = st.sidebar.slider("Number of Rows", 1, 10, 2)
-cols = st.sidebar.slider("Number of Columns", 1, 10, 3)
+st.sidebar.markdown(
+    "**Angle convention:**\n"
+    "- 0° = East\n"
+    "- 90° = North\n"
+    "- 180° = West\n"
+    "- 270° = South"
+)
 
-# ---------- Build the Land Polygon ----------
-# The coordinates (0,0) → (length, width)
-outline = box(0, 0, length, width)
+sides = []
+for i in range(num_sides):
+    st.sidebar.subheader(f"Side {i + 1}")
+    length = st.sidebar.number_input(
+        f"Length (m) – Side {i + 1}",
+        min_value=1.0,
+        value=50.0,
+        key=f"len_{i}",
+    )
+    angle = st.sidebar.number_input(
+        f"Angle (degrees) – Side {i + 1}",
+        min_value=0.0,
+        max_value=360.0,
+        value=90.0,
+        key=f"ang_{i}",
+    )
+    sides.append((length, angle))
 
-# Calculate lot size
-lot_length = length / cols
-lot_width = width / rows
+# ---------- Build Polygon ----------
+points = [(0.0, 0.0)]
+x, y = 0.0, 0.0
 
-# ---------- Build Sub‑lots ----------
-lots = []
-for i in range(cols):
-    for j in range(rows):
-        x0 = i * lot_length
-        y0 = j * lot_width
-        x1 = x0 + lot_length
-        y1 = y0 + lot_width
-        lot = box(x0, y0, x1, y1)
-        lots.append(lot)
+for length, angle in sides:
+    rad = math.radians(angle)
+    dx = length * math.cos(rad)
+    dy = length * math.sin(rad)
+    x += dx
+    y += dy
+    points.append((x, y))
 
-# ---------- Visualize the Land and Subdivisions ----------
-fig, ax = plt.subplots(figsize=(7, 5))
-x, y = outline.exterior.xy
-ax.plot(x, y, color="black", linewidth=2, label="Land Outline")
+# Close the polygon
+points.append(points[0])
 
-for lot in lots:
-    x, y = lot.exterior.xy
-    ax.plot(x, y, color="blue", linewidth=0.8)
+land_poly = Polygon(points)
+
+# ---------- Plot ----------
+fig, ax = plt.subplots(figsize=(7, 6))
+
+xs, ys = zip(*points)
+ax.plot(xs, ys, color="black", linewidth=2, marker="o")
 
 ax.set_aspect("equal")
 ax.set_xlabel("Meters (X)")
 ax.set_ylabel("Meters (Y)")
-ax.set_title("Simple Land Subdivision")
-ax.legend()
+ax.set_title("Land Outline")
+
 st.pyplot(fig, clear_figure=True)
 
 # ---------- Summary ----------
-total_area = outline.area
-lot_area = lots[0].area if lots else 0
-st.markdown(f"**Total Land Area:** {total_area:,.2f} m²")
-st.markdown(f"**Each Lot Area:** {lot_area:,.2f} m²")
-st.markdown(f"**Number of Lots:** {len(lots)}")
+st.markdown(f"**Number of Sides:** {num_sides}")
+st.markdown(f"**Approximate Area:** {land_poly.area:,.2f} m²")
+st.markdown(f"**Perimeter:** {land_poly.length:,.2f} m")
 
-
-
-
-
-
-
-
-
+# ---------- Debug / Validation ----------
+if not land_poly.is_valid:
+    st.warning("⚠️ The polygon is self‑intersecting or invalid.")
+else:
+    st.success("✅ Polygon is valid and ready for subdivision.")
