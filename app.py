@@ -103,7 +103,7 @@ if uploaded_file is not None:
     image = cv2.imdecode(file_bytes, 1)
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
-    st.image(image, caption="Uploaded Property Image", use_container_width=True)
+    st.image(image, caption="Uploaded Property Image", width=True)
 
     if use_sam:
         with st.spinner("🤖 Running AI segmentation (this may take up to 30s)..."):
@@ -115,14 +115,14 @@ if uploaded_file is not None:
             mask[m["segmentation"]] = 255
 
         st.subheader("AI Segmentation (SAM)")
-        st.image(mask, use_container_width=True)
+        st.image(mask, width=True)
 
     else:
         gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
         _, mask = cv2.threshold(gray, 160, 255, cv2.THRESH_BINARY_INV)
 
         st.subheader("Simple Mask (No AI)")
-        st.image(mask, use_container_width=True)
+        st.image(mask, width=True)
 
 else:
     st.info("👉 Upload a property image to begin.")
@@ -136,13 +136,13 @@ if uploaded_file is not None:
     image = cv2.imdecode(file_bytes, 1)
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
-    st.image(image, caption="Uploaded Image", use_container_width=True)
+    st.image(image, caption="Uploaded Image", width=True)
     # 1. Decode the uploaded file to an image array
     file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
     image = cv2.imdecode(file_bytes, 1)
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
-    st.image(image, caption="Uploaded Property Image", use_container_width=True)
+    st.image(image, caption="Uploaded Property Image", width=True)
          # 2. Segmentation choice (safe)
 use_sam = st.checkbox("Enable AI segmentation (SAM)", value=False)
 
@@ -157,7 +157,7 @@ if use_sam:
              mask = clean_mask(mask)
 
     st.subheader("AI Segmentation (SAM)")
-    st.image(mask, use_container_width=True)
+    st.image(mask, width=True)
 
 else:
     # Fast fallback (no AI)
@@ -166,7 +166,7 @@ else:
          mask = clean_mask(mask)
 
     st.subheader("Simple Mask (No AI)")
-    st.image(mask, use_container_width=True)
+    st.image(mask, width=True)
 
     # 3. Generate a very simple conceptual subdivision grid
     coords = np.column_stack(np.where(mask > 0))
@@ -204,6 +204,7 @@ else:
         st.warning("AI segmentation found very little usable land; try another image.")
 else:
     st.info("👉 Upload a clear aerial or satellite image to start.")
+
 
 
 
