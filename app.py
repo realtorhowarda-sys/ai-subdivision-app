@@ -1,3 +1,5 @@
+import streamlit as st
+st.write("✅ NEW LENGTH + ANGLE APP IS RUNNING")
 # ---------- Land Subdivision Planner (Length + Angle) ----------
 import streamlit as st
 import matplotlib.pyplot as plt
@@ -74,3 +76,4 @@ else:
 
 st.markdown(f"**Area:** {land_poly.area:,.2f} m²")
 st.markdown(f"**Perimeter:** {land_poly.length:,.2f} m")
+
