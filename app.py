@@ -57,6 +57,9 @@ closure_error = (dx**2 + dy**2) ** 0.5
 
 st.markdown(f"**Closure error:** {closure_error:.2f} meters")
 
+st.sidebar.header("Subdivision")
+num_lots = st.sidebar.slider("Number of lots", 2, 20, 6)
+
 def subdivide_polygon_vertical(poly, n_lots):
     """
     Subdivide a polygon into n_lots using vertical strips.
@@ -107,6 +110,36 @@ if not land_poly.is_valid:
 else:
     st.success("✅ Polygon is valid and ready for subdivision.")
 
+    # --- Subdivision ---
+    lots = subdivide_polygon_vertical(land_poly, num_lots)
+
+    # --- Plot lots ---
+    fig2, ax2 = plt.subplots(figsize=(7, 6))
+
+    # Land outline
+    x, y = land_poly.exterior.xy
+    ax2.plot(x, y, color="black", linewidth=2)
+
+    # Lots
+    for i, lot in enumerate(lots, start=1):
+        lx, ly = lot.exterior.xy
+        ax2.plot(lx, ly, linewidth=1)
+        cx, cy = lot.centroid.xy
+        ax2.text(cx[0], cy[0], str(i), ha="center", va="center")
+
+    ax2.set_aspect("equal")
+    ax2.set_title("Subdivision Layout")
+    ax2.set_xlabel("Meters (X)")
+    ax2.set_ylabel("Meters (Y)")
+
+    st.pyplot(fig2, clear_figure=True)
+
+    # --- Summary ---
+    areas = [lot.area for lot in lots]
+    st.markdown(f"**Number of Lots:** {len(lots)}")
+    st.markdown(f"**Average Lot Area:** {sum(areas)/len(areas):,.2f} m²")
+
 st.markdown(f"**Area:** {land_poly.area:,.2f} m²")
 st.markdown(f"**Perimeter:** {land_poly.length:,.2f} m")
+
 
