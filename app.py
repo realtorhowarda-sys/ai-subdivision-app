@@ -1,28 +1,22 @@
+# ---------- Land Subdivision Planner (Length + Angle) ----------
 import streamlit as st
 import matplotlib.pyplot as plt
-from shapely.geometry import box
+from shapely.geometry import Polygon
 import math
 
+# ---------- Page Setup ----------
 st.set_page_config(page_title="Land Subdivision Planner", layout="wide")
 st.title("🏗️ Land Subdivision Planner")
 
 st.write(
-    "Define a parcel by entering side lengths, then subdivide it into lots. "
-    "This version uses geometry only (no images, no AI)."
+    "Define a parcel by entering side lengths and angles. "
+    "Angles are measured in degrees (0° = East, 90° = North)."
 )
 
 # ---------- Sidebar Inputs ----------
-st.sidebar.header("Land Outline (Length + Angle)")
+st.sidebar.header("Land Outline")
 
 num_sides = st.sidebar.slider("Number of sides", 3, 10, 4)
-
-st.sidebar.markdown(
-    "**Angle convention:**\n"
-    "- 0° = East\n"
-    "- 90° = North\n"
-    "- 180° = West\n"
-    "- 270° = South"
-)
 
 sides = []
 for i in range(num_sides):
@@ -54,7 +48,7 @@ for length, angle in sides:
     y += dy
     points.append((x, y))
 
-# Close the polygon
+# Close polygon
 points.append(points[0])
 
 land_poly = Polygon(points)
@@ -72,15 +66,11 @@ ax.set_title("Land Outline")
 
 st.pyplot(fig, clear_figure=True)
 
-# ---------- Summary ----------
-st.markdown(f"**Number of Sides:** {num_sides}")
-st.markdown(f"**Approximate Area:** {land_poly.area:,.2f} m²")
-st.markdown(f"**Perimeter:** {land_poly.length:,.2f} m")
-
-# ---------- Debug / Validation ----------
+# ---------- Validation ----------
 if not land_poly.is_valid:
-    st.warning("⚠️ The polygon is self‑intersecting or invalid.")
+    st.warning("⚠️ Polygon is invalid (self‑intersection or overlap).")
 else:
-    st.success("✅ Polygon is valid and ready for subdivision.")
+    st.success("✅ Polygon is valid.")
 
-
+st.markdown(f"**Area:** {land_poly.area:,.2f} m²")
+st.markdown(f"**Perimeter:** {land_poly.length:,.2f} m")
