@@ -1,3 +1,6 @@
+import streamlit as st
+st.write("✅ NEW OUTLINE APP LOADED")
+
 # ---------- Simple Land Outline Subdivision App ----------
 import streamlit as st
 import matplotlib.pyplot as plt
@@ -64,6 +67,7 @@ lot_area = lots[0].area if lots else 0
 st.markdown(f"**Total Land Area:** {total_area:,.2f} m²")
 st.markdown(f"**Each Lot Area:** {lot_area:,.2f} m²")
 st.markdown(f"**Number of Lots:** {len(lots)}")
+
 
 
 
