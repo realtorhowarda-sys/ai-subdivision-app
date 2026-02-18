@@ -1,4 +1,6 @@
 # ---------- Land Subdivision Planner (Length + Angle) ----------
+from shapely.geometry import box
+from shapely.ops import unary_union
 import streamlit as st
 import matplotlib.pyplot as plt
 from shapely.geometry import Polygon
@@ -55,6 +57,30 @@ closure_error = (dx**2 + dy**2) ** 0.5
 
 st.markdown(f"**Closure error:** {closure_error:.2f} meters")
 
+def subdivide_polygon_vertical(poly, n_lots):
+    """
+    Subdivide a polygon into n_lots using vertical strips.
+    Returns a list of lot polygons.
+    """
+    minx, miny, maxx, maxy = poly.bounds
+    width = (maxx - minx) / n_lots
+
+    lots = []
+    for i in range(n_lots):
+        x0 = minx + i * width
+        x1 = minx + (i + 1) * width
+        strip = box(x0, miny, x1, maxy)
+
+        piece = poly.intersection(strip)
+        if not piece.is_empty:
+            if piece.geom_type == "Polygon":
+                lots.append(piece)
+            else:
+                # Handle MultiPolygon by merging
+                lots.append(unary_union(piece))
+
+    return lots
+
 # ---------- Close Polygon ----------
 if points[-1] != points[0]:
     points.append(points[0])
@@ -83,3 +109,4 @@ else:
 
 st.markdown(f"**Area:** {land_poly.area:,.2f} m²")
 st.markdown(f"**Perimeter:** {land_poly.length:,.2f} m")
+
