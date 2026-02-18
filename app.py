@@ -1,16 +1,13 @@
-# ---------- Land Subdivision Planner (Irregular Outline) ----------
 import streamlit as st
 import matplotlib.pyplot as plt
-import numpy as np
-from shapely.geometry import Polygon
-import math
+from shapely.geometry import box
 
-# ---------- Page Setup ----------
 st.set_page_config(page_title="Land Subdivision Planner", layout="wide")
 st.title("🏗️ Land Subdivision Planner")
+
 st.write(
-    "Define a parcel by entering side lengths and angles. "
-    "The outline is drawn from sequential directions."
+    "Define a parcel by entering side lengths, then subdivide it into lots. "
+    "This version uses geometry only (no images, no AI)."
 )
 
 # ---------- Sidebar Inputs ----------
@@ -84,3 +81,4 @@ if not land_poly.is_valid:
     st.warning("⚠️ The polygon is self‑intersecting or invalid.")
 else:
     st.success("✅ Polygon is valid and ready for subdivision.")
+
