@@ -1,11 +1,5 @@
 streamlit
-torch
-torchvision
-torchaudio
-segment-anything
-opencv-python-headless
 matplotlib
-shapely
-geopandas
 numpy
-# trigger rebuild
+shapely
+
