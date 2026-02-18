@@ -122,7 +122,7 @@ if uploaded_file is not None:
         _, mask = cv2.threshold(gray, 160, 255, cv2.THRESH_BINARY_INV)
 
         st.subheader("Simple Mask (No AI)")
-        st.image(mask, width=True)
+        st.image(mask, width="stretch")
 
 else:
     st.info("👉 Upload a property image to begin.")
@@ -166,7 +166,7 @@ else:
          mask = clean_mask(mask)
 
     st.subheader("Simple Mask (No AI)")
-    st.image(mask, width=True)
+    st.image(mask, width="stretch")
 
     # 3. Generate a very simple conceptual subdivision grid
     coords = np.column_stack(np.where(mask > 0))
@@ -204,6 +204,7 @@ else:
         st.warning("AI segmentation found very little usable land; try another image.")
 else:
     st.info("👉 Upload a clear aerial or satellite image to start.")
+
 
 
 
